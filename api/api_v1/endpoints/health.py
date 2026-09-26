@@ -15,5 +15,5 @@ def health() -> HealthStatus:
     logger.info("Consultando health")
     return HealthStatus(
         status="ok",
-        llm_configured=bool(settings.OPENROUTER_API_KEY),
+        llm_configured=bool(settings.AZURE_OPENAI_API_KEY or settings.OPENROUTER_API_KEY),
     )

@@ -50,6 +50,10 @@ class Settings(BaseSettings):
     OPENROUTER_API_KEY: str = ""
     OPENROUTER_MODEL: str = "openai/gpt-4o-mini"
     OPENROUTER_BASE_URL: str = "https://openrouter.ai/api/v1"
+    AZURE_OPENAI_ENDPOINT: str = ""
+    AZURE_OPENAI_API_KEY: str = ""
+    AZURE_OPENAI_API_VERSION: str = "2024-02-15-preview"
+    AZURE_OPENAI_DEPLOYMENT_CHAT: str = ""
     EXCHANGE_API_URL: str = "https://api.frankfurter.app"
     EXCHANGE_TIMEOUT_SECONDS: float = 5.0
     LOGGING_CONFIG: dict[str, Any] = Field(default_factory=_logging_config)

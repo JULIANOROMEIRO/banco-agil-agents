@@ -143,7 +143,7 @@ streamlit run streamlit_app.py
 - API: http://127.0.0.1:8000/docs
 - Tela: http://127.0.0.1:8501
 
-Preencha `OPENROUTER_API_KEY` no `.env`. Esse arquivo não entra no Git. A triagem funciona sem a chave. Crédito, entrevista e câmbio precisam dela para o modelo conversar e escolher a ferramenta. As regras continuam testáveis sem a chave.
+No `.env`, preencha `AZURE_OPENAI_API_KEY` junto com o endpoint e o deployment, ou `OPENROUTER_API_KEY`. Esse arquivo não entra no Git. Se as duas chaves existirem, o Azure é usado. A triagem funciona sem chave. Crédito, entrevista e câmbio precisam de uma delas para o modelo conversar e escolher a ferramenta. As regras continuam testáveis sem chave.
 
 Docker:
 
