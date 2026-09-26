@@ -76,10 +76,19 @@ with col_encerrar:
 if st.session_state.session_id:
     st.text(f"Sessão: {st.session_state.session_id}")
 
+def _texto_visivel(texto: str) -> str:
+    return (
+        texto.replace("\\", "\\\\")
+        .replace("$", r"\$")
+        .replace("*", r"\*")
+        .replace("_", r"\_")
+    )
+
+
 for item in st.session_state.history:
     papel = "assistant" if item["role"] == "assistant" else "user"
     with st.chat_message(papel):
-        st.write(item["content"])
+        st.markdown(_texto_visivel(item["content"]))
 
 if st.session_state.session_id and not st.session_state.finished:
     mensagem = st.chat_input("Escreva sua mensagem")

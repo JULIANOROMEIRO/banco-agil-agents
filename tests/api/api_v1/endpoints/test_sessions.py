@@ -40,6 +40,9 @@ async def test_autenticacao_correta(async_client):
     assert corpo["session"]["authenticated"] is True
     assert corpo["session"]["cpf"] == CPF
     assert "Ana Lima" in corpo["reply"]
+    assert "limite de crédito" in corpo["reply"]
+    assert "aumento de limite" in corpo["reply"]
+    assert "cotação" in corpo["reply"]
 
 
 @pytest.mark.asyncio

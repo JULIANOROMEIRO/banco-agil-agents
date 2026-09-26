@@ -33,7 +33,7 @@ def run_tool_agent(*, session, skill_name: str, tools: list) -> str:
     sistema = (
         f"{render_skill(skill)}\n\n"
         f"CPF autenticado: {session.cpf}. Use este CPF nas actions. "
-        "Não invente números: apresente somente o retorno das actions."
+        "Se faltar um dado, faça uma única pergunta curta, em texto puro."
     )
     mensagens = [SystemMessage(content=sistema)]
     for item in session.history:
@@ -44,12 +44,16 @@ def run_tool_agent(*, session, skill_name: str, tools: list) -> str:
 
     modelo = get_llm().bind_tools(tools)
     por_nome = {ferramenta.name: ferramenta for ferramenta in tools}
+    retornos = []
 
     for _ in range(4):
         resposta = modelo.invoke(mensagens)
         mensagens.append(resposta)
         if not getattr(resposta, "tool_calls", None):
+            if retornos:
+                return "\n\n".join(retornos)
             return _texto(resposta) or "Não consegui formular uma resposta."
+        retornos = []
         for chamada in resposta.tool_calls:
             nome = chamada["name"]
             try:
@@ -64,7 +68,11 @@ def run_tool_agent(*, session, skill_name: str, tools: list) -> str:
             except Exception:
                 logger.exception("Falha ao executar a tool %s", nome)
                 resultado = "Não foi possível executar esta operação."
+            texto_resultado = str(resultado)
+            retornos.append(texto_resultado)
             mensagens.append(
-                ToolMessage(content=str(resultado), tool_call_id=chamada["id"])
+                ToolMessage(content=texto_resultado, tool_call_id=chamada["id"])
             )
+    if retornos:
+        return "\n\n".join(retornos)
     return "Não consegui concluir a solicitação. Tente reformular."

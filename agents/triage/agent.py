@@ -28,7 +28,13 @@ def atender(session, texto: str) -> str:
             session.active_agent = None
             cliente = crud_clientes.buscar_cliente(session.cpf)
             nome = cliente.nome if cliente else "cliente"
-            return f"Autenticação concluída, {nome}. Como posso ajudar?"
+            return (
+                f"Autenticação concluída, {nome}. Posso ajudar com:\n"
+                "1. Consultar o limite de crédito\n"
+                "2. Solicitar aumento de limite\n"
+                "3. Consultar a cotação de uma moeda\n"
+                "O que você precisa?"
+            )
     except DataFileError as exc:
         return str(exc)
 
