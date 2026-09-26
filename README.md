@@ -117,7 +117,7 @@ LangGraph não foi usado. Os estados são poucos e conhecidos: encerrado, autent
 
 As skills YAML separam a instrução conversacional da regra. YAML descreve o comportamento. Python mantém autenticação, score e limite.
 
-OpenRouter permite trocar o modelo por variável de ambiente, sem prender a regra de negócio a um fornecedor.
+O modelo pago fica atrás de variáveis de ambiente. No ambiente publicado a chave é do Azure OpenAI, com endpoint e deployment próprios. O OpenRouter continua aceito em desenvolvimento se a chave do Azure não estiver preenchida. A regra de crédito não muda quando o fornecedor muda.
 
 O CSV ficou porque o desafio pede leitura e gravação nesses arquivos. Não há banco.
 
@@ -143,7 +143,7 @@ streamlit run streamlit_app.py
 - API: http://127.0.0.1:8000/docs
 - Tela: http://127.0.0.1:8501
 
-No `.env`, preencha `AZURE_OPENAI_API_KEY` junto com o endpoint e o deployment, ou `OPENROUTER_API_KEY`. Esse arquivo não entra no Git. Se as duas chaves existirem, o Azure é usado. A triagem funciona sem chave. Crédito, entrevista e câmbio precisam de uma delas para o modelo conversar e escolher a ferramenta. As regras continuam testáveis sem chave.
+No `.env`, preencha a chave do Azure ou a do OpenRouter. Esse arquivo não entra no Git. O detalhe está na seção da chave, abaixo.
 
 Docker:
 
@@ -151,7 +151,40 @@ Docker:
 docker compose up --build
 ```
 
-A API publica a porta 8000 e o Streamlit a 8501. Informe a chave ao subir, por exemplo `OPENROUTER_API_KEY=... docker compose up --build`.
+A API publica a porta 8000 e o Streamlit a 8501. A chave entra só como variável de ambiente do processo da API.
+
+# Chave do modelo
+
+A conversa usa uma chave paga do Azure OpenAI. A escolha é de operação, não de regra de negócio.
+
+Uma chave paga identifica um deployment contratado, com cota e responsável. Isso é o que se espera num atendimento que sai da máquina de quem desenvolveu e fica no ar para outra pessoa testar. Chave gratuita de demonstração costuma cortar no meio da conversa ou mudar de endereço. A autenticação, o score e a aprovação de limite não dependem dessa chave: continuam em Python. O modelo só classifica a intenção, extrai os campos da entrevista, escolhe a ferramenta e redige a frase.
+
+A chave fica somente na variável de ambiente do processo da API. O Streamlit não a recebe. O navegador não a recebe. O Git não a recebe.
+
+No ambiente publicado, as variáveis são:
+
+```text
+AZURE_OPENAI_ENDPOINT
+AZURE_OPENAI_API_KEY
+AZURE_OPENAI_API_VERSION
+AZURE_OPENAI_DEPLOYMENT_CHAT
+```
+
+Se a chave do Azure estiver preenchida, ela tem prioridade. `OPENROUTER_API_KEY` só entra quando a do Azure não existe. A triagem autentica sem chave. Crédito, entrevista e câmbio precisam dela para o modelo falar.
+
+Para conferir se o processo enxergou a chave, abra o health. O campo `llm_configured` fica `true` quando a chave está no ambiente. Ele não devolve a chave.
+
+# Teste na Hostinger
+
+A API publicada no EasyPanel da Hostinger:
+
+- Aplicação: https://banco-agil-agents.jk5mhc.easypanel.host/
+- Documentação: https://banco-agil-agents.jk5mhc.easypanel.host/docs
+- Health: https://banco-agil-agents.jk5mhc.easypanel.host/api/v1/health
+
+Esse endereço é a API, na porta 8000 do aplicativo `agentes`, no projeto `banco-agil`. A tela Streamlit é outro aplicativo e fala com essa API por dentro do painel. Ela não carrega a chave.
+
+Pelo `/docs` dá para abrir uma sessão e enviar mensagem. Sem `llm_configured: true`, a triagem ainda autentica. Crédito, entrevista e câmbio respondem que o modelo não está configurado até a chave estar salva no painel e o aplicativo ser implantado de novo.
 
 # Testes
 
@@ -162,7 +195,7 @@ pytest -v
 
 A suíte é curta e cobre os riscos do desafio: saúde da API, abertura de sessão, autenticação válida, terceira falha, consulta de limite, aumento aprovado, aumento rejeitado, cálculo do score, score entre 0 e 1000, valor negativo rejeitado, cotação, timeout da API de câmbio, encerramento explícito, frase parecida que não encerra, e o roteamento de limite para crédito e de dólar para câmbio.
 
-O roteamento usa um modelo falso em `tests/fakes.py`. A suíte não chama o OpenRouter.
+O roteamento usa um modelo falso em `tests/fakes.py`. A suíte não chama o Azure nem o OpenRouter.
 
 # Limitações
 
