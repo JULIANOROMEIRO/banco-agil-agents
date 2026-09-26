@@ -176,15 +176,19 @@ Para conferir se o processo enxergou a chave, abra o health. O campo `llm_config
 
 # Teste na Hostinger
 
-A API publicada no EasyPanel da Hostinger:
+A tela do chat é o Streamlit, no aplicativo `chat` do projeto `banco-agil`:
+
+https://banco-agil-chat.jk5mhc.easypanel.host/
+
+Abra esse endereço no navegador. O botão inicia o atendimento, a caixa envia a fala do cliente e o histórico fica na página. Essa tela não guarda a chave do Azure. Ela chama a API por dentro do painel, em `http://banco-agil_agentes:8000`.
+
+A API, no aplicativo `agentes`, fica em outro endereço:
 
 - Aplicação: https://banco-agil-agents.jk5mhc.easypanel.host/
 - Documentação: https://banco-agil-agents.jk5mhc.easypanel.host/docs
 - Health: https://banco-agil-agents.jk5mhc.easypanel.host/api/v1/health
 
-Esse endereço é a API, na porta 8000 do aplicativo `agentes`, no projeto `banco-agil`. A tela Streamlit é outro aplicativo e fala com essa API por dentro do painel. Ela não carrega a chave.
-
-Pelo `/docs` dá para abrir uma sessão e enviar mensagem. Sem `llm_configured: true`, a triagem ainda autentica. Crédito, entrevista e câmbio respondem que o modelo não está configurado até a chave estar salva no painel e o aplicativo ser implantado de novo.
+O health mostra `llm_configured: true` quando a chave está no ambiente da API. Sem isso, a triagem ainda autentica. Crédito, entrevista e câmbio só conversam depois que a chave está salva no aplicativo `agentes` e ele foi implantado de novo.
 
 # Testes
 
