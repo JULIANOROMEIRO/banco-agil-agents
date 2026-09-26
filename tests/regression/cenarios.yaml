@@ -1,0 +1,7 @@
+cenarios:
+  - nome: aumento de limite
+    mensagem: "Quero aumentar meu limite"
+    active_agent: credit
+  - nome: cotacao do dolar
+    mensagem: "Quanto está o dólar?"
+    active_agent: exchange
