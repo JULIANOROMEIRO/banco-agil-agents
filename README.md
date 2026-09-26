@@ -51,7 +51,7 @@ O orquestrador decide o turno em Python:
 
 A sessão guarda o histórico, o CPF, as tentativas, o agente ativo e os dados já coletados na entrevista. Ela fica na memória do processo.
 
-Cada agente tem um `skill.yaml` com o comportamento esperado: nome, descrição, instruções, tópicos, passos e actions. O YAML descreve. O Python executa. As actions do YAML não criam ferramentas sozinhas; as ferramentas de cada agente estão registradas no código daquele agente.
+Cada agente tem um `skill.yaml` com o comportamento esperado: nome, descrição, instruções, tópicos, passos e actions. O YAML descreve. O Python executa. O menu mostrado depois da autenticação sai dos passos do tópico `oferecer_servicos` da triagem. As actions do YAML não criam ferramentas sozinhas; as ferramentas de cada agente estão registradas no código daquele agente. Os schemas Pydantic continuam no papel do template: validar entrada e saída da API e os dados da entrevista, não guardar texto de conversa.
 
 Dados:
 
@@ -176,19 +176,37 @@ Para conferir se o processo enxergou a chave, abra o health. O campo `llm_config
 
 # Teste na Hostinger
 
-A tela do chat é o Streamlit, no aplicativo `chat` do projeto `banco-agil`:
+A tela do chat:
 
 https://banco-agil-chat.jk5mhc.easypanel.host/
 
-Abra esse endereço no navegador. O botão inicia o atendimento, a caixa envia a fala do cliente e o histórico fica na página. Essa tela não guarda a chave do Azure. Ela chama a API por dentro do painel, em `http://banco-agil_agentes:8000`.
+Clique em **Iniciar atendimento**. A autenticação não usa a chave do modelo. Crédito, aumento e cotação usam. O health da API precisa mostrar `llm_configured: true`:
 
-A API, no aplicativo `agentes`, fica em outro endereço:
+https://banco-agil-agents.jk5mhc.easypanel.host/api/v1/health
 
-- Aplicação: https://banco-agil-agents.jk5mhc.easypanel.host/
-- Documentação: https://banco-agil-agents.jk5mhc.easypanel.host/docs
-- Health: https://banco-agil-agents.jk5mhc.easypanel.host/api/v1/health
+Os clientes abaixo estão em `data/clientes.csv`. A data no arquivo é `AAAA-MM-DD`. No chat, informe `DD/MM/AAAA`.
 
-O health mostra `llm_configured: true` quando a chave está no ambiente da API. Sem isso, a triagem ainda autentica. Crédito, entrevista e câmbio só conversam depois que a chave está salva no aplicativo `agentes` e ele foi implantado de novo.
+| Cliente | CPF | Nascimento | Limite | Score | O que dá para mostrar |
+|---|---|---|---|---|---|
+| Ana Lima | `11111111111` | `15/05/1990` | 20000 | 850 | Aumento até 50000 |
+| Bruno Costa | `22222222222` | `02/11/1985` | 2000 | 450 | Aumento até 5000 |
+| Carla Dias | `33333333333` | `20/01/1992` | 500 | 200 | Pedido acima de 1000 é rejeitado |
+
+Faixas de `data/score_limite.csv`: 0 a 299 até 1000; 300 a 599 até 5000; 600 a 799 até 15000; 800 a 1000 até 50000.
+
+Exemplo com a Ana Lima:
+
+1. `11111111111`
+2. `15/05/1990`
+3. A resposta lista os três serviços.
+4. `Quero consultar meu limite`
+5. `Quero aumentar meu limite para 30000` — cabe no score 850 e é aprovado.
+6. `Quero saber a cotação do dólar`
+7. `quero encerrar`
+
+Um pedido de `8000` para a Ana é rejeitado porque o limite atual já é 20000. O novo valor precisa ser maior que o atual e caber na faixa. `fim de semana` não encerra a conversa. `quero encerrar` encerra.
+
+A documentação da API, separada do chat, fica em https://banco-agil-agents.jk5mhc.easypanel.host/docs.
 
 # Testes
 

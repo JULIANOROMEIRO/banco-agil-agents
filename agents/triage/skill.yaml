@@ -19,6 +19,14 @@ topics:
       - autenticar
     actions:
       - autenticar_cliente
+  oferecer_servicos:
+    description: >
+      Depois da autenticação, apresenta os serviços antes de encaminhar.
+    steps:
+      - Consultar o limite de crédito
+      - Solicitar aumento de limite
+      - Consultar a cotação de uma moeda
+    actions: []
   encerrar:
     description: >
       Cliente pede para encerrar antes de concluir a autenticação.
