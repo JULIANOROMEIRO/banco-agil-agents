@@ -57,7 +57,8 @@ O orquestrador decide o turno:
 - pedido explícito de fim: encerra;
 - cliente sem autenticação: triagem;
 - autenticado e ainda sem assunto: classifica crédito, câmbio ou encerrar;
-- assunto já escolhido: permanece nele até o fim, ou até a entrevista devolver o cliente ao crédito.
+- assunto já escolhido: permanece nele, salvo pedido explícito do outro serviço;
+- entrevista: não troca de assunto no meio das respostas. No fim, devolve o cliente ao crédito.
 
 A sessão fica na memória do processo. Guarda histórico, CPF, tentativas, agente ativo e os dados já ditos na entrevista.
 
@@ -199,9 +200,9 @@ A data no CSV está em `AAAA-MM-DD`. No chat, use `DD/MM/AAAA`.
 | Bruno Costa | `22222222222` | `02/11/1985` | 2.000 | 450 | Aumento até 5.000 |
 | Carla Dias | `33333333333` | `20/01/1992` | 500 | 200 | Pedido acima de 1.000 é rejeitado |
 
-Faça o crédito e a cotação em atendimentos separados. Depois que a conversa entra em limite, ela permanece no crédito até encerrar. A cotação é o outro agente. Pedi-la no meio do aumento não troca de assunto.
+Na mesma conversa, um pedido explícito troca de assunto sem avisar. "Quero a cotação do dólar" sai do crédito e vai ao câmbio. "Quero consultar meu limite" faz o caminho inverso. Um número, como `30000`, não troca: continua sendo o valor do limite. Durante a entrevista, as respostas não mudam de agente.
 
-**Atendimento 1, crédito da Ana Lima**
+**Crédito e cotação, na mesma conversa**
 
 1. `11111111111`
 2. `15/05/1990`
@@ -209,15 +210,10 @@ Faça o crédito e a cotação em atendimentos separados. Depois que a conversa 
 4. `Quero consultar meu limite`
 5. `Quero aumentar meu limite para 30000`
 6. O pedido é aprovado: 30.000 é maior que 20.000 e cabe no score 850.
-7. `quero encerrar`
+7. `Quero saber a cotação do dólar`
+8. `quero encerrar`
 
 `8000` para a Ana é rejeitado. O novo limite precisa ser maior que o atual. Se a rejeição for por estourar a faixa, o crédito oferece a entrevista.
-
-**Atendimento 2, cotação**
-
-1. Inicie uma conversa nova e autentique de novo.
-2. `Quero saber a cotação do dólar`
-3. `quero encerrar`
 
 `fim de semana` não encerra. `quero encerrar` encerra.
 
@@ -237,6 +233,6 @@ O roteamento usa um modelo falso em `tests/fakes.py`. A suíte não gasta a chav
 ## Limitações
 
 - A sessão some quando a API reinicia.
-- Depois do roteamento, o assunto fica no agente escolhido até encerrar, ou até a entrevista devolver o cliente ao crédito. Cotação e limite, na mesma conversa, não se alternam.
+- Durante a entrevista, o assunto não muda. Fora dela, limite e cotação se alternam quando o pedido é explícito.
 - Aprovado e rejeitado saem na hora. O CSV prevê `pendente`, e esta versão não deixa pedido em análise manual.
 - O modelo falso dos testes não substitui a conversa com o Azure.
