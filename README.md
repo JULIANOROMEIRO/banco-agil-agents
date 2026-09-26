@@ -8,6 +8,35 @@ Os dados são sintéticos. Os CPFs, como `11111111111`, não são documentos rea
 
 **API:** https://banco-agil-agents.jk5mhc.easypanel.host/docs
 
+**Código:** https://github.com/JULIANOROMEIRO/banco-agil-agents
+
+## Como entrar no chat
+
+Abra o endereço do chat no navegador:
+
+https://banco-agil-chat.jk5mhc.easypanel.host/
+
+A página já está em português. Se aparecer a barra **Traduzido para português**, clique em **Desfazer**. Com a tradução automática ligada, o primeiro botão pode aparecer só como "Iniciar". O texto real é **Iniciar atendimento**.
+
+O que a tela mostra antes de começar:
+
+- o título **Banco Ágil**;
+- a frase "Atendimento com agentes. Todos os dados exibidos são sintéticos.";
+- o botão **Iniciar atendimento**;
+- o botão **Encerrar conversa**, ainda desligado, porque não há conversa aberta.
+
+Para conversar:
+
+1. Clique em **Iniciar atendimento**.
+2. A saudação pede o CPF. A caixa no rodapé se chama **Escreva sua mensagem**.
+3. Envie o CPF e, na mensagem seguinte, a data de nascimento no formato `DD/MM/AAAA`.
+4. Depois da autenticação, o atendimento lista os três serviços. Escreva o pedido na mesma caixa.
+5. **Encerrar conversa** envia o encerramento e limpa a tela. Também vale escrever `quero encerrar`.
+
+A documentação da API é outra página, sem chat: https://banco-agil-agents.jk5mhc.easypanel.host/docs
+
+O passo a passo com CPF, limite e cotação está em [Teste na Hostinger](#teste-na-hostinger).
+
 ## Visão Geral
 
 O cliente informa CPF e data de nascimento. Com os dados conferidos em `clientes.csv`, o atendimento oferece três serviços:
@@ -167,7 +196,40 @@ O `.env` não entra no Git. Preencha a chave do Azure ou, na ausência dela, a d
 docker compose up --build
 ```
 
-A API publica a porta 8000 e o Streamlit a 8501. A chave entra só no processo da API.
+O Compose sobe as mesmas duas imagens usadas na publicação. A API escuta a porta 8000 e o Streamlit a 8501. Dentro da rede do Compose, o chat encontra a API em `http://api:8000`. A chave entra só no processo da API.
+
+## Publicação no EasyPanel
+
+O atendimento publicado não é uma cópia separada do código. O EasyPanel, na Hostinger, está ligado ao repositório GitHub `JULIANOROMEIRO/banco-agil-agents`, na branch `master`. Um push atualiza a origem. A imagem nova só entra no ar depois de **Implantar** o aplicativo correspondente.
+
+O projeto no painel se chama `banco-agil`. São dois aplicativos, cada um com o próprio Dockerfile, porque a tela e a API são processos diferentes.
+
+| Aplicativo | Dockerfile | Porta | Endereço público | Função |
+|---|---|---|---|---|
+| `agentes` | `Dockerfile` | 8000 | https://banco-agil-agents.jk5mhc.easypanel.host | FastAPI, agentes, CSV e chamada ao modelo |
+| `chat` | `Dockerfile.streamlit` | 8501 | https://banco-agil-chat.jk5mhc.easypanel.host | Tela Streamlit |
+
+O `Dockerfile` da API parte de `python:3.12-slim`, instala `requirements.txt` e sobe o Uvicorn:
+
+```dockerfile
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+```
+
+O `Dockerfile.streamlit` usa a mesma base e sobe só a tela:
+
+```dockerfile
+CMD ["streamlit", "run", "streamlit_app.py", "--server.port=8501", "--server.address=0.0.0.0"]
+```
+
+No EasyPanel cada aplicativo é um container próprio. Eles não compartilham a rede interna do `docker compose`. Por isso a tela não usa `http://api:8000`. A variável do aplicativo `chat` aponta para o endereço público da API:
+
+```text
+API_BASE_URL=https://banco-agil-agents.jk5mhc.easypanel.host
+```
+
+Essa variável fica no ambiente do aplicativo, sem criar arquivo `.env` dentro do container. A tela lê `API_BASE_URL` pelo sistema. A chave do modelo fica somente no aplicativo `agentes`.
+
+Mudança de orquestrador, agente ou regra pede **Implantar** em `agentes`. Mudança da tela pede **Implantar** em `chat`.
 
 ## Chave do modelo
 
@@ -188,7 +250,7 @@ https://banco-agil-agents.jk5mhc.easypanel.host/api/v1/health
 
 ## Teste na Hostinger
 
-Abra o chat e clique em **Iniciar atendimento**:
+Entre pelo endereço do chat e clique em **Iniciar atendimento**, como descrito em [Como entrar no chat](#como-entrar-no-chat):
 
 https://banco-agil-chat.jk5mhc.easypanel.host/
 
